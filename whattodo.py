@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+"""
+Allows to see sorted by date TODOS from code
+"""
+__version__ = "0.1.0"
+
 import os
 from dataclasses import asdict, dataclass
 from datetime import datetime
