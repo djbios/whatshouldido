@@ -16,8 +16,22 @@ from tabulate import tabulate
 import click
 from git import GitCommandError, Repo
 
-SEARCH_PATTERNS = ["TODO", "FIXME", "fixme", ' todo', 'fix_me']
-FILES_FILTER = [".py"]
+SEARCH_PATTERNS = ["TODO", "FIXME", "fixme", " todo", "fix_me"]
+FILES_FILTER = [
+    ".c",
+    ".cgi",
+    ".class",
+    ".cpp",
+    ".cs",
+    ".h",
+    ".java",
+    ".php",
+    ".py",
+    ".sh",
+    ".swift",
+    ".vb",
+    ".js"
+]
 
 
 @dataclass
@@ -33,7 +47,7 @@ def find_todolines(path, repo_path, extensions) -> List[TodoLine]:
     todolines = []
     for root, dirs, files in os.walk(path):
         for filename in files:
-            if not any(filename.endswith(e) for e in extensions):
+            if extensions and not any(filename.endswith(e) for e in extensions):
                 continue
             filepath = os.path.join(root, filename)
             try:
@@ -60,36 +74,53 @@ def find_todolines(path, repo_path, extensions) -> List[TodoLine]:
 
 def print_list(todos):
     for t in todos:
-        print(colored(t.date, 'red'), colored(t.author, 'green'))
+        print(colored(t.date, "red"), colored(t.author, "green"))
         print(t.line)
-        print(colored(t.filepath, 'blue'))
+        print(colored(t.filepath, "blue"))
         print()
 
+
 def print_table(todos):
-    print(tabulate([asdict(t) for t in todos], headers={'date': 'Date', 'author': 'Author', 'line':'Line', 'filepath': 'Path'}, tablefmt='fancy_grid'))
+    print(
+        tabulate(
+            [(t.date, t.author, t.line, t.filepath) for t in todos],
+            headers=[
+                "Date",
+                "Author",
+                "Line",
+                "Path",
+            ],
+            tablefmt="fancy_grid",
+        )
+    )
+
 
 @click.command()
 @click.option(
-    "--path", default=os.getcwd(), help="Git repo path", type=click.Path(exists=True),
+    "--path",
+    default=os.getcwd(),
+    help="Git repo path",
+    type=click.Path(exists=True),
 )
 @click.option(
-    "-e", multiple=True, default=FILES_FILTER, help="File extensions filters"
+    "-e",
+    multiple=True,
+    default=FILES_FILTER,
+    help="Comma separated file extensions filters",
 )
-@click.option(
-    '--table', default=True, help="Print as table"
-)
+@click.option("--table/--list", default=True, help="Print as table or as list")
 def list_todos(path, e, table):
     if isinstance(e, str):
         e = (e,)
 
     repo_path = path
-    while repo_path != '/':
-        if '.git' not in os.listdir(repo_path):
+    while repo_path != "/":
+        if ".git" not in os.listdir(repo_path):
             repo_path = os.path.dirname(repo_path)
         else:
             break
-    if repo_path == '/':
-        raise Exception('Git repo not found')
+    if repo_path == "/":
+        raise Exception("Git repo not found")
 
     todolines = find_todolines(path, repo_path, e)
     todolines = sorted(todolines, key=lambda t: t.date)
