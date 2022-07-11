@@ -1,4 +1,5 @@
 # whatshouldido - TODO comments cli tool
+[![PyPI version](https://badge.fury.io/py/whatshouldido.svg)](https://badge.fury.io/py/whatshouldido)
 
 Allows to see **sorted by date** TODOS from code.
 
