@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name='whattodo',
+    name='whatshouldido',
     version='0.1.0',
-    py_modules=['whattodo'],
+    py_modules=['whatshouldido'],
     install_requires=[
         'Click',
         'termcolor',
@@ -12,7 +12,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'whattodo = whattodo:list_todos',
+            'whatshouldido = whatshouldido:list_todos',
         ],
     },
 )

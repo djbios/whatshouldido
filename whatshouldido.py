@@ -3,18 +3,20 @@
 """
 Allows to see sorted by date TODOS from code
 """
-__version__ = "0.1.0"
+__version__ = "0.1.7"
 
 import os
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from typing import List
+
 from termcolor import colored
 from tabulate import tabulate
 
 import click
 from git import GitCommandError, Repo
 
-SEARCH_PATTERNS = ["TODO", "FIXME"]
+SEARCH_PATTERNS = ["TODO", "FIXME", "fixme", ' todo', 'fix_me']
 FILES_FILTER = [".py"]
 
 
@@ -26,7 +28,7 @@ class TodoLine:
     author: str
 
 
-def find_todolines(path, repo_path, extensions) -> list[TodoLine]:
+def find_todolines(path, repo_path, extensions) -> List[TodoLine]:
     repo = Repo(repo_path)
     todolines = []
     for root, dirs, files in os.walk(path):
