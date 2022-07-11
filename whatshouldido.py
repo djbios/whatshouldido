@@ -35,7 +35,7 @@ FILES_FILTER = [
 
 
 @dataclass
-class TodoLine:
+class TodoLine:  # TODO Separate file
     filepath: str
     line: str
     date: datetime
@@ -68,7 +68,7 @@ def find_todolines(path, repo_path, extensions) -> List[TodoLine]:
                             )
 
             except GitCommandError:
-                pass
+                pass # TODO logging?
     return todolines
 
 
@@ -102,7 +102,7 @@ def print_table(todos):
     help="Git repo path",
     type=click.Path(exists=True),
 )
-@click.option(
+@click.option(  # FIXME Alternate long arg
     "-e",
     multiple=True,
     default=FILES_FILTER,
