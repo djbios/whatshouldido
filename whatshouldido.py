@@ -3,10 +3,10 @@
 """
 Allows to see sorted by date TODOS from code
 """
-__version__ = "0.1.7"
+__version__ = "0.1.9"
 
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 
@@ -33,6 +33,7 @@ FILES_FILTER = [
     ".js"
 ]
 
+MAX_STR_WIDTH = 64
 
 @dataclass
 class TodoLine:  # TODO Separate file
@@ -83,7 +84,7 @@ def print_list(todos):
 def print_table(todos):
     print(
         tabulate(
-            [(t.date, t.author, t.line, t.filepath) for t in todos],
+            [(t.date, t.author, str(t.line)[:MAX_STR_WIDTH], t.filepath) for t in todos],
             headers=[
                 "Date",
                 "Author",
