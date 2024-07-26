@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='whatshouldido',
-    version='0.1.0',
+    version='0.1.10',
     py_modules=['whatshouldido'],
     install_requires=[
         'Click',

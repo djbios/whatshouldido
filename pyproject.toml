@@ -12,7 +12,7 @@ readme = "README.MD"
 dependencies = ["termcolor", "tabulate", "GitPython", "click"]
 
 [project.urls]
-Home = "https://djbios.org"
+Home = "https://github.com/djbios/whatshouldido"
 
 [project.scripts]
 whatshouldido = "whatshouldido:list_todos"
