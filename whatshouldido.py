@@ -3,12 +3,13 @@
 """
 Allows to see sorted by date TODOS from code
 """
-__version__ = "0.1.9"
+__version__ = "0.1.10"
 
 import os
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from termcolor import colored
 from tabulate import tabulate
@@ -42,36 +43,44 @@ class TodoLine:  # TODO Separate file
     date: datetime
     author: str
 
+def process_file(repo, filepath):
+    todolines = []
+    try:
+        line_num = 0
+        for commit, lines in repo.blame("HEAD", filepath):
+            for l in lines:
+                line_num += 1
+                if hasattr(l, "decode"):
+                    continue  # Byte str, skip
+                if any(p in l for p in SEARCH_PATTERNS):
+                    todolines.append(
+                        TodoLine(
+                            filepath=f'File "{filepath}:{line_num}"',
+                            line=l.lstrip(" "),
+                            date=commit.committed_datetime,
+                            author=commit.author.name,
+                        )
+                    )
+    except GitCommandError:
+        pass  # TODO logging?
+    return todolines
 
 def find_todolines(path, repo_path, extensions) -> List[TodoLine]:
     repo = Repo(repo_path)
-    todolines = []
-    for root, dirs, files in os.walk(path):
-        for filename in files:
-            if extensions and not any(filename.endswith(e) for e in extensions):
-                continue
-            filepath = os.path.join(root, filename)
-            try:
-                line_num = 0
-                for commit, lines in repo.blame("HEAD", filepath):
-                    for l in lines:
-                        line_num += 1
-                        if hasattr(l, "decode"):
-                            continue  # Byte str, skip
-                        if any(p in l for p in SEARCH_PATTERNS):
-                            todolines.append(
-                                TodoLine(
-                                    filepath=f'File "{filepath}:{line_num}"',
-                                    line=l.lstrip(" "),
-                                    date=commit.committed_datetime,
-                                    author=commit.author.name,
-                                )
-                            )
+    all_todolines = []
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for root, dirs, files in os.walk(path):
+            for filename in files:
+                if extensions and not any(filename.endswith(e) for e in extensions):
+                    continue
+                filepath = os.path.join(root, filename)
+                futures.append(executor.submit(process_file, repo, filepath))
 
-            except GitCommandError:
-                pass # TODO logging?
-    return todolines
+        for future in as_completed(futures):
+            all_todolines.extend(future.result())
 
+    return all_todolines
 
 def print_list(todos):
     for t in todos:
@@ -79,7 +88,6 @@ def print_list(todos):
         print(t.line)
         print(colored(t.filepath, "blue"))
         print()
-
 
 def print_table(todos):
     print(
@@ -94,7 +102,6 @@ def print_table(todos):
             tablefmt="fancy_grid",
         )
     )
-
 
 @click.command()
 @click.option(
@@ -129,7 +136,6 @@ def list_todos(path, e, table):
         print_table(todolines)
     else:
         print_list(todolines)
-
 
 if __name__ == "__main__":
     list_todos()
